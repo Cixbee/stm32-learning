@@ -1,0 +1,21 @@
+# 编译产物
+build/
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.su
+*.d
+*.idx
+
+# 预编译二进制库（CMSIS 的 lib/a，CubeMX 可重新生成，不进版本库）
+*.lib
+*.a
+
+# CubeMX 临时文件
+mx.scratch
+
+# 系统与编辑器
+Thumbs.db
+.DS_Store
