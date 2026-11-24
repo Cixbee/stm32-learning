@@ -11,6 +11,10 @@ STM32F103C8T6 最小系统板（Blue Pill）上的一组外设学习实验，全
 | [`tim-external-input`](tim-external-input) | TIM2 外部时钟模式 2，统计外部脉冲 | TIM2_ETR ← `PA0`、I2C1 OLED | OLED 实时显示脉冲计数值 |
 | [`tim-slave-mode`](tim-slave-mode) | TIM2 从模式复位，外部触发清零计数器 | TIM2_CH1 ← `PA0`、USART2 | 串口打印「自动重装载」/「从模式触发」 |
 | [`tim-input-capture`](tim-input-capture) | 输入捕获测脉宽，HC-SR04 超声波测距 | TIM1_CH3/CH4 ← `PA10`、TRIG → `PA11`、OLED | OLED 显示距离（cm） |
+| [`tim-encoder`](tim-encoder) | 编码器接口模式计数 + PWM 联动 | TIM1_CH1/CH2 ← `PA8`/`PA9`、TIM3_CH1 → `PA6`、OLED | 旋钮转到哪，数字、进度条、LED 亮度就跟到哪 |
+| [`tim-motor`](tim-motor) | DRV8833 电机驱动 + 编码器比例闭环 | TIM2_CH1/CH2 → `PA0`/`PA1`、编码器 `PA8`/`PA9` | 「力反馈旋钮」：编码器偏向哪边，电机就往哪边转 |
+| [`tim-servo`](tim-servo) | 50 Hz 舵机 PWM + 编码器调角度 | TIM4_CH3 → `PB8`、编码器 `PA8`/`PA9` | 旋转编码器，舵机在 0–180° 之间跟随 |
+| [`adc`](adc) | ADC 单通道轮询采样并换算电压 | ADC1_IN5 ← `PA5`、USART2 | 串口每 0.5 s 打印原始值与电压 |
 | [`oled-ssd1306`](oled-ssd1306) | SSD1306 OLED 驱动库（帧缓冲 + 图形/字符） | I2C1：`PB6`(SCL) / `PB7`(SDA) | 提供画点/线/圆/字符串接口 |
 
 ## 硬件
@@ -20,6 +24,9 @@ STM32F103C8T6 最小系统板（Blue Pill）上的一组外设学习实验，全
 - **下载调试**：ST-LINK V2（SWD：`PA13` SWDIO / `PA14` SWCLK）
 - **显示**：SSD1306 0.96" OLED，128×64，I2C 接口
 - **测距**：HC-SR04 超声波模块（TRIG / ECHO）
+- **电机**：DRV8833 双 H 桥驱动 + 带编码器的直流减速电机
+- **舵机**：SG90 / MG996R 类 50 Hz PWM 舵机
+- **输入**：增量式旋转编码器（EC11 等）、电位器、按键
 
 ## 工具链
 
@@ -57,6 +64,10 @@ cmake --build --preset Debug
 ├── tim-external-input/    TIM2 ETR 外部时钟计数 + OLED 显示
 ├── tim-slave-mode/        TIM2 从模式复位 + UART 打印
 ├── tim-input-capture/     TIM1 输入捕获 + HC-SR04 测距 + OLED 显示
+├── tim-encoder/           TIM1 编码器接口 + TIM3 PWM 联动
+├── tim-motor/             DRV8833 电机驱动 + 编码器比例闭环
+├── tim-servo/             TIM4 50 Hz 舵机 PWM + 编码器调角
+├── adc/                   ADC1 单通道采样 + 串口输出
 └── oled-ssd1306/          SSD1306 OLED 驱动库
 ```
 
