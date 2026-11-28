@@ -15,6 +15,10 @@ STM32F103C8T6 最小系统板（Blue Pill）上的一组外设学习实验，全
 | [`tim-motor`](tim-motor) | DRV8833 电机驱动 + 编码器比例闭环 | TIM2_CH1/CH2 → `PA0`/`PA1`、编码器 `PA8`/`PA9` | 「力反馈旋钮」：编码器偏向哪边，电机就往哪边转 |
 | [`tim-servo`](tim-servo) | 50 Hz 舵机 PWM + 编码器调角度 | TIM4_CH3 → `PB8`、编码器 `PA8`/`PA9` | 旋转编码器，舵机在 0–180° 之间跟随 |
 | [`adc`](adc) | ADC 单通道轮询采样并换算电压 | ADC1_IN5 ← `PA5`、USART2 | 串口每 0.5 s 打印原始值与电压 |
+| [`ws2812`](ws2812) | PWM + DMA 驱动 WS2812B 灯珠 | TIM3_CH1 → `PB4` | 4 颗灯常亮红色 |
+| [`colorful-lights`](colorful-lights) | 10 颗 WS2812 + 串口指令协议 | TIM3_CH1 → `PB4`、USART2 | 串口发帧控制每颗灯颜色 |
+| [`cyclic-buffer`](cyclic-buffer) | 串口指令环形缓冲区与帧解析 | USART2（`PA2`/`PA3`） | 收到合法帧后原样回显 |
+| [`calendar`](calendar) | RTC 电子日历，旋钮调时间 | RTC+LSE `PC14`/`PC15`、OLED `PB6`/`PB7`、编码器 `PA8`/`PA9`、按键 `PB15` | OLED 显示日期/时间/星期，可旋钮设置 |
 | [`oled-ssd1306`](oled-ssd1306) | SSD1306 OLED 驱动库（帧缓冲 + 图形/字符） | I2C1：`PB6`(SCL) / `PB7`(SDA) | 提供画点/线/圆/字符串接口 |
 
 ## 硬件
@@ -26,7 +30,9 @@ STM32F103C8T6 最小系统板（Blue Pill）上的一组外设学习实验，全
 - **测距**：HC-SR04 超声波模块（TRIG / ECHO）
 - **电机**：DRV8833 双 H 桥驱动 + 带编码器的直流减速电机
 - **舵机**：SG90 / MG996R 类 50 Hz PWM 舵机
+- **灯带**：WS2812B 可寻址 RGB 灯珠（5 V 供电，单总线 800 kHz）
 - **输入**：增量式旋转编码器（EC11 等）、电位器、按键
+- **时钟**：32.768 kHz LSE 晶振 + 纽扣电池（RTC 掉电走时）
 
 ## 工具链
 
@@ -68,6 +74,10 @@ cmake --build --preset Debug
 ├── tim-motor/             DRV8833 电机驱动 + 编码器比例闭环
 ├── tim-servo/             TIM4 50 Hz 舵机 PWM + 编码器调角
 ├── adc/                   ADC1 单通道采样 + 串口输出
+├── ws2812/                TIM3+DMA 驱动 WS2812B 灯珠
+├── colorful-lights/       10 颗 WS2812 + 串口指令协议（App/Lib 分层）
+├── cyclic-buffer/         串口指令环形缓冲区与帧解析
+├── calendar/              RTC 电子日历 + 旋钮设置（App/Lib 分层）
 └── oled-ssd1306/          SSD1306 OLED 驱动库
 ```
 
@@ -82,6 +92,13 @@ cmake --build --preset Debug
 ├── Drivers/            HAL 驱动与 CMSIS（CubeMX 生成）
 ├── cmake/              工具链与 CubeMX 生成的 CMake 片段
 └── STM32F103xx_FLASH.ld
+```
+
+其中 `colorful-lights` 和 `calendar` 多了按职责分层的两个目录，业务代码不堆在 `Core/Src/main.c` 里：
+
+```
+├── Lib/                可复用组件（ws2812 / command / oled / rtc / knob）
+└── App/                业务逻辑（task_light.c / task_main.c）
 ```
 
 ## 说明

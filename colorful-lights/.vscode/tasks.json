@@ -1,0 +1,129 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "STM32: 配置 (Debug)",
+            "type": "process",
+            "command": "cmake",
+            "args": [
+                "--preset",
+                "Debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "detail": "按 CMakePresets.json 生成 build/Debug（幂等，可反复执行）"
+        },
+        {
+            "label": "STM32: 编译 (Debug)",
+            "type": "process",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build/Debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "dependsOn": [
+                "STM32: 配置 (Debug)"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": {
+                "owner": "gcc",
+                "source": "arm-none-eabi-gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": [
+                    {
+                        "regexp": "^(.*?):(\\d+):(\\d+):\\s+(error|warning):\\s+(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3,
+                        "severity": 4,
+                        "message": 5
+                    },
+                    {
+                        "regexp": "^(.*?):(\\d+):\\s+(error|warning):\\s+(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "severity": 3,
+                        "message": 4
+                    }
+                ]
+            },
+            "group": "build",
+            "detail": "先配置再编译，输出 build/Debug/ColorfulLights.elf"
+        },
+        {
+            "label": "STM32: 释放探针",
+            "type": "process",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "Get-Process -Name ST-LINK_gdbserver -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'cube.exe' -and $_.CommandLine -match 'gdb' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; exit 0"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated",
+                "close": true
+            },
+            "detail": "清掉上次调试残留的 gdbserver，避免 ST-Link 被锁死（No debug probe detected / Target is not responding）。无论是否杀到都返回 0"
+        },
+        {
+            "label": "STM32: 烧录到芯片 (ST-Link)",
+            "type": "process",
+            "command": "C:/Program Files/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI.exe",
+            "args": [
+                "-c",
+                "port=SWD",
+                "mode=UR",
+                "freq=1000",
+                "-w",
+                "${workspaceFolder}/build/Debug/ColorfulLights.elf",
+                "-v",
+                "-rst"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "dependsOn": [
+                "STM32: 释放探针"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+            "detail": "复位下连接 + 1MHz 烧录 build/Debug/ColorfulLights.elf，烧完自动复位运行"
+        },
+        {
+            "label": "STM32: 编译并烧录",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "STM32: 编译 (Debug)",
+                "STM32: 烧录到芯片 (ST-Link)"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "一键：配置 → 编译 → 释放探针 → 下载/校验/复位（Ctrl+Shift+B）"
+        },
+        {
+            "label": "STM32: 调试前准备",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "STM32: 编译 (Debug)",
+                "STM32: 释放探针"
+            ],
+            "problemMatcher": [],
+            "detail": "launch.json 里 preLaunchTask 调用它：先保证 elf 是最新的，再清掉残留 gdbserver"
+        }
+    ]
+}

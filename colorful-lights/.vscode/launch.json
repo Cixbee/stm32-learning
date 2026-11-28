@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "stlinkgdbtarget",
+            "request": "launch",
+            "name": "STM32: 调试 (ST-Link)",
+            "origin": "snippet",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "STM32: 调试前准备",
+            "preBuild": "",
+            "runEntry": "main",
+            "serverInterface": "SWD",
+            "serverInterfaceFrequency": "1000",
+            "imagesAndSymbols": [
+                {
+                    "imageFileName": "${workspaceFolder}/build/Debug/ColorfulLights.elf"
+                }
+            ]
+        },
+        {
+            "type": "stlinkgdbtarget",
+            "request": "attach",
+            "name": "STM32: 附加调试（不烧写）",
+            "origin": "snippet",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "STM32: 释放探针",
+            "preBuild": "",
+            "runEntry": "main",
+            "serverInterface": "SWD",
+            "serverInterfaceFrequency": "1000",
+            "imagesAndSymbols": [
+                {
+                    "imageFileName": "${workspaceFolder}/build/Debug/ColorfulLights.elf"
+                }
+            ]
+        }
+    ]
+}
